@@ -1,0 +1,14 @@
+{
+  "name": "nunchuk-test",
+  "version": "1.0.0",
+  "description": "test of wii nunchuk and node",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Jeff Heppert",
+  "license": "ISC",
+  "dependencies": {
+    "johnny-five": "^0.8.106"
+  }
+}

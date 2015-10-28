@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Wiiiii!</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <script src='//code.jquery.com/jquery-1.7.2.min.js'></script>
+    <script src='//localhost:3000/socket.io/socket.io.js'></script>
+    <script>
+    	var socket = io.connect('//localhost:3000');
+    	socket.on('joystickChange', function(data) {
+                // console.log(data.val);
+                // console.log("receiving");
+                // $('#messages').text(data.amount);
+                // moveDot(data.axis, data.direction, data.amount);
+                moveDotIncrementally(data.axis, data.direction, data.amount);
+                // console.log("butt");
+            });
+    	socket.on('error', function() { console.error(arguments) });
+        socket.on('message', function() { console.log(arguments) });
+
+    </script>
+</head>
+<body>
+
+    <h1 id='messages'></h1>
+    <div id="indicator"></div>
+
+    <script>
+
+
+    function moveDot(axis, direction, amount) {
+        // Moves the on-screen dot
+        // console.log(axis + " " + direction + " " + amount);
+        if(axis == 'x') {
+            var newPosition = mapValues(amount, 124, 1080, 0, 100);
+            var positionOffset = (newPosition/100) * 20;
+            $("#indicator").css("left", "calc(" + (newPosition + "vw") + " - " + positionOffset + "px");
+            console.log("X value: " + amount + " X position: " + newPosition);
+        }
+        if(axis == 'y') {
+            var newPosition = mapValues(amount, 224, 984, 0, 100);
+            var positionOffset = (newPosition/100) * 20;
+            $("#indicator").css("bottom", "calc(" + (newPosition + "vh") + " - " + positionOffset + "px");
+            $('#messages').text("Y: " + amount + " Position: " + newPosition);
+        }
+    } // END moveDot()
+
+
+    function moveDotIncrementally(axis, direction, amount) {
+        if(axis == 'x') { 
+            // 500-700 is no movement
+            console.log(amount);
+            var moveSpeed = mapValues(amount, 124, 1080, 0, 100);
+            if(direction == -1) {
+                $("#indicator").css("left", "-=" + (1*moveSpeed) + "px");
+            }
+            if(direction == 1) {
+                $("#indicator").css("left", "+=" + (1*moveSpeed) + "px");
+            }
+            
+        }
+        if(axis == 'y') {
+            // var moveSpeed = mapValues(amount, 224, 984, 0, 100);
+            // $("#indicator").css("bottom", "calc(" + (newPosition + "vh") + " - " + positionOffset + "px");
+            // $('#messages').text("Y: " + amount + " Position: " + newPosition);
+        }
+    }
+
+
+    function mapValues( x, in_min, in_max, out_min, out_max) {
+        // Taken directly from Arduino's map() function
+        return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+    }
+
+    </script>
+
+</body>
+</html>
+
