@@ -12,6 +12,8 @@ app.get('/', function(req, res) {
 
 board.on("ready", function() {
 
+  console.log("root directory: " + __dirname);
+
   // When using the WiiChuck adapter with an UNO,
   // these pins act as the Ground and Power lines.
   // This will not work on a Leonardo, so these

@@ -2,7 +2,7 @@
 <html>
 <head>
 	<title>Wiiiii!</title>
-    <link rel="stylesheet" href="css/style.css" />
+    <!-- <link rel="stylesheet" href="css/style.css" /> -->
     <script src='//code.jquery.com/jquery-1.7.2.min.js'></script>
     <script src='//localhost:3000/socket.io/socket.io.js'></script>
     <script>
@@ -48,22 +48,25 @@
 
     function moveDotIncrementally(axis, direction, amount) {
         if(axis == 'x') { 
-            // 500-700 is no movement
-            console.log(amount);
-            var moveSpeed = mapValues(amount, 124, 1080, 0, 100);
-            if(direction == -1) {
-                $("#indicator").css("left", "-=" + (1*moveSpeed) + "px");
+            // 124 - 1080 full range of travel
+            // 500-700 is no movement (joystick not being moved)
+            
+
+            if(direction == -1 && amount <= 500) {
+                var moveSpeed = mapValues(amount, 124, 500, 100, 0);
+                // changePosition("left", moveSpeed);
+                $("#indicator").css("left", "+=" + (direction * (moveSpeed/10)) + "px");
+                console.log("CSS 'left' delta " + direction * (moveSpeed/10) + "px");
             }
-            if(direction == 1) {
-                $("#indicator").css("left", "+=" + (1*moveSpeed) + "px");
+            if(direction == 1 && amount >= 700) {
+                var moveSpeed = mapValues(amount, 700, 1080, 0, 100);
+                // changePosition("right", moveSpeed);
+                $("#indicator").css("left", "+=" + (direction * (moveSpeed/10)) + "px");
+                console.log("CSS 'left' delta: " + direction * (moveSpeed/10) + "px");
             }
             
         }
-        if(axis == 'y') {
-            // var moveSpeed = mapValues(amount, 224, 984, 0, 100);
-            // $("#indicator").css("bottom", "calc(" + (newPosition + "vh") + " - " + positionOffset + "px");
-            // $('#messages').text("Y: " + amount + " Position: " + newPosition);
-        }
+        // IF Y AXIS HERE
     }
 
 
@@ -72,7 +75,48 @@
         return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
     }
 
+
+    function changePosition(direction, howMuch) {
+        var cssProperty = "";
+        if(direction == "left" || direction == "right") { cssProperty = "left" }
+        if(direction == "up" || direction == "down") { cssProperty = "bottom" }
+
+        var changeValue = (direction * (howMuch/10)) + "px";
+        $("#indicator").css(cssProperty, "+=" + changeValue);
+        console.log("CSS " + cssProperty + " delta: " + changeValue);
+    }
+
+
     </script>
+
+
+
+
+    <style>
+
+        html {
+          box-sizing: border-box;
+        }
+        *, *:before, *:after {
+          box-sizing: inherit;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        #indicator {
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            background-color: black;
+            position: absolute;
+            bottom: calc(50vh - 10px);
+            left: calc(50vw - 10px);
+        }
+
+    </style>
 
 </body>
 </html>
