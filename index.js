@@ -24,7 +24,8 @@ board.on("ready", function() {
 
   // Create a new `nunchuk` hardware instance.
   nunchuk = new five.Wii.Nunchuk({
-    freq: 50
+    freq: 0,
+    holdtime: 0
   });
 
 
@@ -35,7 +36,6 @@ board.on("ready", function() {
       event.target[event.axis],
       event.axis, event.direction
     );
-    // io.sockets.emit('nunchukChange', {val: event.axis});
     joystickChange(event.axis, event.direction, event.target[event.axis]);
   });
 
@@ -46,6 +46,7 @@ board.on("ready", function() {
       event.target[event.axis],
       event.axis, event.direction
     );
+    accelerometerChange(event.axis, event.direction, event.target[event.axis]);
   });
 
 
@@ -66,21 +67,6 @@ board.on("ready", function() {
   });
 
 
-    // nunchuk.on('data', function() {
-    //   // var testData = "testing 123"
-    //   // var outputData = this.value;
-
-    //   console.log(this.value);
-    //   io.sockets.emit('test', {val: this.value});
-
-    //   // console.log(outputData);
-    //   // io.sockets.emit("data", {val: outputData});
-
-    //   // console.log(testData);
-    //   // io.sockets.emit("data", {val: testData});
-    // });
-
-
 
 }); // END board.on("ready") function
 
@@ -96,4 +82,9 @@ http.listen(3000, function() {
 
 function joystickChange(axis, direction, amount) {
   io.sockets.emit('joystickChange', {axis: axis, direction: direction, amount: amount});
+}
+
+
+function accelerometerChange(axis, direction, amount) {
+  io.sockets.emit('accelerometerChange', {axis: axis, direction: direction, amount: amount});
 }
