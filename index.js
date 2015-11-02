@@ -33,15 +33,6 @@ board.on("ready", function() {
 
 
 // BEGIN EVENT HANDLERS:
-  // nunchuk.joystick.on("change", function(err, event) {
-  //   console.log(
-  //     "joystick " + event.axis,
-  //     event.target[event.axis],
-  //     event.axis, event.direction
-  //   );
-  //   joystickChange(event.axis, event.direction, event.target[event.axis]);
-  // });
-
 
   // Experimenting with read "firehose" event:
   // nunchuk.on("data", function(err, event){
@@ -55,12 +46,6 @@ board.on("ready", function() {
   //   }
   //   console.log(output);
 
-
-  //   // nunchuk.joystick.on("change", function(err, event){
-  //   //   // console.log(event.target[event.axis]);
-  //   //   joystickChange(event.axis, event.direction, event.target[event.axis]);
-  //   // });
-  // });
 
   nunchuk.joystick.on("change", function(err, event) {
     console.log(
@@ -83,20 +68,21 @@ board.on("ready", function() {
 
 
 
-  // ["down", "up", "hold"].forEach(function(type) {
+  ["down", "up", "hold"].forEach(function(type) {
 
-  //   nunchuk.on(type, function(err, event) {
-  //     console.log(
-  //       event.target.which + " is " + type,
+    nunchuk.on(type, function(err, event) {
+      // console.log(
+      //   event.target.which + " is " + type,
 
-  //       {
-  //         isUp: event.target.isUp,
-  //         isDown: event.target.isDown
-  //       }
-  //     );
-  //   });
+      //   {
+      //     isUp: event.target.isUp,
+      //     isDown: event.target.isDown
+      //   }
+      // );
+      buttonChange(event.target.which, type);
+    });
 
-  // });
+  });
 
 
 
@@ -119,4 +105,10 @@ function joystickChange(axis, direction, amount) {
 
 function accelerometerChange(axis, direction, amount) {
   io.sockets.emit('accelerometerChange', {axis: axis, direction: direction, amount: amount});
+}
+
+
+function buttonChange(button, status) {
+  console.log("in buttonChange");
+  io.sockets.emit('buttonChange', {button: button, status: status});
 }

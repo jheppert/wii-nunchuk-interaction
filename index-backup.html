@@ -9,17 +9,19 @@
     <script>
     	var socket = io.connect('//localhost:3000');
     	socket.on('joystickChange', function(data) {
+            // moveDot(data.axis, data.direction, data.amount);
+            // moveDotIncrementally(data.axis, data.direction, data.amount);
+            // moveObjectIncrementally(data.axis, data.direction, data.amount);
             // calibrate(data.axis, data.direction, data.amount);
             changeCamera(data.axis, data.direction, data.amount);
         });
         socket.on('accelerometerChange', function(data) {
+            // moveDot(data.axis, data.direction, data.amount);
+            // moveDotIncrementally(data.axis, data.direction, data.amount);
+            // changeCamera(data.axis, data.direction, data.amount);
             // calibrate(data.axis, data.direction, data.amount);
             // displayValues(data.axis, data.direction, data.amount);
             moveObjectWithAccelerometer(data.axis, data.direction, data.amount);
-        });
-        socket.on('buttonChange', function(data){
-            console.log("BUTTON: " + data.button + " " + data.status);
-            // changeGeometry();
         });
     	socket.on('error', function() { console.error(arguments) });
         socket.on('message', function() { console.log(arguments) });
@@ -58,17 +60,40 @@
         // floor.receiveShadow = true;
         // scene.add(floor);
 
+        
 
         // Setting up the main object:
-        var geometry = [];
-        geometry[0] = new THREE.IcosahedronGeometry(1, 0);
-        geometry[1] = new THREE.BoxGeometry(1, 1, 1);
-        geometry[2] = new THREE.SphereGeometry( 1, 16, 16 );
+        // var littleCubes = new Array();
+        // littleCubes[0] = new Array();
+        // littleCubes[0][0] = new Array();
+        // var littleCubeGeometry = new THREE.BoxGeometry(1, 1, 1);
+
+        var geometry = new THREE.IcosahedronGeometry(1, 0);
+        // var geometry = new THREE.BoxGeometry(1, 1, 1);
         var material = new THREE.MeshPhongMaterial( { color: 0xdddddd, specular: 0x009900, shininess: 30, shading: THREE.FlatShading } );
 
 
+        // Generate a matrix of cubes for a rubix cube:
+        // for(var n1=0;n1<3;n1++) {
+        //     for(var n2=0;n2<3;n2++) {
+        //         for(var n3=0;n3<3;n3++) {
+        //             littleCubes[n3] = new THREE.Mesh( littleCubeGeometry, material );
+        //         }
+        //         littleCubes[n1][n2] = littleCubes[n2];
+        //     }
+        // }
+        // littleCubes[0] = new THREE.Mesh( littleCubeGeometry, material );
+        // littleCubes[1] = new THREE.Mesh( littleCubeGeometry, material );
+        // littleCubes[2] = new THREE.Mesh( littleCubeGeometry, material );
+
+        // var littleCube[1].translateX(1);
+
         // var mainObject = new THREE.Object3D(); // Group
-        var mainObject = new THREE.Mesh( geometry[2], material );
+        var mainObject = new THREE.Mesh( geometry, material );
+        // mainObject.add(littleCubes[0].translateX(-1.1));
+        // mainObject.add(littleCubes[1]);
+        // mainObject.add(littleCubes[2].translateX(1.1));
+        // mainObject.castShadow = true;
         scene.add( mainObject );
 
 
@@ -87,11 +112,6 @@
         scene.add( lights[1] );
         scene.add( lights[2] );
 
-        // hemiLight = new THREE.HemisphereLight( 0xffffff, 0xffffff, 0.6 );
-        // hemiLight.color.setHSL( 0.6, 1, 0.6 );
-        // hemiLight.groundColor.setHSL( 0.095, 1, 0.75 );
-        // hemiLight.position.set( 0, 500, 0 );
-        // scene.add( hemiLight );
 
 
         camera.position.z = 3;
@@ -109,6 +129,7 @@
         };
 
         render();
+        console.log("after render function");
     </script>
 
 
@@ -178,8 +199,130 @@
 
 
 
+    function moveDot(axis, direction, amount) {
+        // Moves the on-screen dot
+        // console.log(axis + " " + direction + " " + amount);
+        if(axis == 'x') {
+            var newPosition = mapValues(amount, 124, 1080, 0, 100);
+            var positionOffset = (newPosition/100) * 20;
+            $("#indicator").css("left", "calc(" + (newPosition + "vw") + " - " + positionOffset + "px");
+            console.log("X value: " + amount + " X position: " + newPosition);
+        }
+        if(axis == 'y') {
+            var newPosition = mapValues(amount, 224, 984, 0, 100);
+            var positionOffset = (newPosition/100) * 20;
+            $("#indicator").css("bottom", "calc(" + (newPosition + "vh") + " - " + positionOffset + "px");
+            $('#messages').text("Y: " + amount + " Position: " + newPosition);
+        }
+    } // END moveDot()
 
-    function moveObjectWithAccelerometer(axis, direction, amount) {
+
+    function moveDotIncrementally(axis, direction, amount) {
+        if(axis == 'x') { 
+            // 124 - 1080 full range of travel
+            // 500-700 is no movement (joystick not being moved)
+            
+
+            if(direction == -1 && amount <= 500) {
+                var moveSpeed = mapValues(amount, 124, 500, 100, 0);
+                // changePosition("left", moveSpeed);
+                $("#indicator").css("left", "+=" + (direction * (moveSpeed/10)) + "px");
+                console.log("CSS 'left' delta " + direction * (moveSpeed/10) + "px");
+            }
+            if(direction == 1 && amount >= 700) {
+                var moveSpeed = mapValues(amount, 700, 1080, 0, 100);
+                // changePosition("right", moveSpeed);
+                $("#indicator").css("left", "+=" + (direction * (moveSpeed/10)) + "px");
+                console.log("CSS 'left' delta: " + direction * (moveSpeed/10) + "px");
+            }
+            
+        }
+        if(axis == 'y') { 
+            // 220 - 984 full range of travel
+            // 500-700 is no movement (joystick not being moved)
+            
+
+            if(direction == -1 && amount <= 500) {
+                var moveSpeed = mapValues(amount, 124, 500, 100, 0);
+                $("#indicator").css("bottom", "+=" + (direction * (moveSpeed/10)) + "px");
+                console.log("CSS 'bottom' delta " + direction * (moveSpeed/10) + "px");
+            }
+            if(direction == 1 && amount >= 700) {
+                var moveSpeed = mapValues(amount, 700, 1080, 0, 100);
+                $("#indicator").css("bottom", "+=" + (direction * (moveSpeed/10)) + "px");
+                console.log("CSS 'bottom' delta: " + direction * (moveSpeed/10) + "px");
+            }
+            
+        }
+    }
+
+
+
+    function moveObjectIncrementally(axis, direction, amount) {
+        var tweenDelay = 200;
+        if(axis == 'x') { 
+            // 124 - 1080 full range of travel
+            // 128-912 is most likely
+            // 500-700 is no movement (joystick not being moved)
+
+            if(direction == -1 && amount <= 500) {
+                var moveSpeed = mapValues(amount, 124, 500, 1, 0);
+                // changePosition("left", moveSpeed);
+                // $("#indicator").css("left", "+=" + (direction * moveSpeed) + "px");
+                // console.log("CSS 'left' delta " + direction * moveSpeed + "px");
+                // mainObject.rotation.y += direction * moveSpeed;
+                // mainObject.rotateY(2);
+                new createjs.Tween( mainObject.rotation ).to( { y: mainObject.rotation.y + (direction * (moveSpeed/3))}, moveSpeed*50 );
+                console.log("moveSpeed = " + moveSpeed);
+                // render();
+            }
+            if(direction == 1 && amount >= 700) {
+                var moveSpeed = mapValues(amount, 700, 912, 0, 1);
+                // changePosition("right", moveSpeed);
+                // $("#indicator").css("left", "+=" + (direction * moveSpeed) + "px");
+                // console.log("CSS 'left' delta: " + direction * moveSpeed + "px");
+                // mainObject.rotation.y += direction * moveSpeed;
+                new createjs.Tween( mainObject.rotation ).to( { y: mainObject.rotation.y + (direction * (moveSpeed/3))}, moveSpeed*50 );
+                console.log("moveSpeed = " + moveSpeed);
+                // render();
+            }
+            
+        }
+        if(axis == 'y') { 
+            // 220 - 984 full range of travel
+            // 136-876 is most likely
+            // 500-700 is no movement (joystick not being moved)
+
+            if(direction == -1 && amount <= 500) {
+                var moveSpeed = mapValues(amount, 136, 500, 1, 0);
+                // $("#indicator").css("bottom", "+=" + (direction * moveSpeed) + "px");
+                // console.log("CSS 'bottom' delta " + direction * moveSpeed + "px");
+                // mainObject.rotation.x -= direction * moveSpeed;
+                new createjs.Tween( mainObject.rotation ).to( { x: mainObject.rotation.x - (direction * (moveSpeed/3))}, moveSpeed*50 );
+                console.log("moveSpeed = " + moveSpeed);
+                // render();
+            }
+            if(direction == 1 && amount >= 700) {
+                var moveSpeed = mapValues(amount, 700, 876, 0, 1);
+                // $("#indicator").css("bottom", "+=" + (direction * moveSpeed) + "px");
+                // console.log("CSS 'bottom' delta: " + direction * moveSpeed + "px");
+                // mainObject.rotation.x -= direction * moveSpeed;
+                new createjs.Tween( mainObject.rotation ).to( { x: mainObject.rotation.x - (direction * (moveSpeed/3))}, moveSpeed*50 );
+                console.log("moveSpeed = " + moveSpeed);
+                // render();
+            }
+            
+        }
+        // console.log("X: " + mainObject.rotation.x + " Y: " + mainObject.rotation.y);
+    }
+
+
+
+
+
+
+
+function moveObjectWithAccelerometer(axis, direction, amount) {
         var tweenDelay = 200;
         if(axis == 'x') { 
             // ? - ? full range of travel
@@ -240,20 +383,42 @@
             var randomAxis = Math.round(Math.random() * (2 - 0) + 0);
             console.log(randomAxis);
             if(axisArray[randomAxis] == 'x'){
-                new createjs.Tween( mainObject.scale ).to( { x: mainObject.scale.x + (camera.position.z /6)}, 200 );
+                new createjs.Tween( mainObject.scale ).to( { x: mainObject.scale.x + 1}, 200 );
             }
             if(axisArray[randomAxis] == 'y'){
-                new createjs.Tween( mainObject.scale ).to( { y: mainObject.scale.y + (camera.position.z /6)}, 200 );
+                new createjs.Tween( mainObject.scale ).to( { y: mainObject.scale.y + 1}, 200 );
             }
             if(axisArray[randomAxis] == 'z'){
-                new createjs.Tween( mainObject.scale ).to( { z: mainObject.scale.z + (camera.position.z /6)}, 200 );
+                new createjs.Tween( mainObject.scale ).to( { z: mainObject.scale.z + 1}, 200 );
             }
-            // var newObject = mainObject.clone();
-            // newObject.position.set(2, 2, 2);
-            // scene.add(newObject);
-            // render();
             console.log("Bam!");
         }
+        // if(axis == 'z') { 
+        //     // ? - ? full range of travel
+        //     // 388-704 is most likely
+        //     // 600-700 is no movement (not being moved)
+
+        //     if(direction == -1 && amount <= 500) {
+        //         var moveSpeed = mapValues(amount, 136, 500, 1, 0);
+        //         // $("#indicator").css("bottom", "+=" + (direction * moveSpeed) + "px");
+        //         // console.log("CSS 'bottom' delta " + direction * moveSpeed + "px");
+        //         // mainObject.rotation.x -= direction * moveSpeed;
+        //         new createjs.Tween( mainObject.rotation ).to( { z: mainObject.rotation.z - (direction * (moveSpeed/3))}, moveSpeed*50 );
+        //         console.log("moveSpeed = " + moveSpeed);
+        //         // render();
+        //     }
+        //     if(direction == 1 && amount >= 700) {
+        //         var moveSpeed = mapValues(amount, 700, 876, 0, 1);
+        //         // $("#indicator").css("bottom", "+=" + (direction * moveSpeed) + "px");
+        //         // console.log("CSS 'bottom' delta: " + direction * moveSpeed + "px");
+        //         // mainObject.rotation.x -= direction * moveSpeed;
+        //         new createjs.Tween( mainObject.rotation ).to( { z: mainObject.rotation.z - (direction * (moveSpeed/3))}, moveSpeed*50 );
+        //         console.log("moveSpeed = " + moveSpeed);
+        //         // render();
+        //     }
+            
+        // }
+        // console.log("X: " + mainObject.rotation.x + " Y: " + mainObject.rotation.y);
     }
 
 
@@ -273,21 +438,6 @@
                 var cameraMove = mapValues(amount, 700, 876, 0, 1);
                 camera.position.z -= direction * cameraMove;
             }
-            console.log("Camera z value: " + camera.position.z);
-        }
-        if(axis == 'x') {
-            // newPositionZ = mapValues(amount, 132, 1080, 0, 1);
-            // camera.position.z += newPositionZ;
-            // console.log("amount: " + amount + " camera Z position: " + camera.position.z);
-            if(direction == -1 && amount <= 500) {
-                var cameraMove = mapValues(amount, 136, 500, 1, 0);
-                camera.position.x += direction * cameraMove;
-            }
-            if(direction == 1 && amount >= 700) {
-                var cameraMove = mapValues(amount, 700, 876, 0, 1);
-                camera.position.x += direction * cameraMove;
-            }
-            console.log("Camera z value: " + camera.position.z);
         }
     }
 
