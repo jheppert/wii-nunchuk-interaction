@@ -2,6 +2,7 @@ var app = require('express')();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var five = require("johnny-five"), board, nunchuk;
+var oldOutput;
 
 board = new five.Board();
 
@@ -9,6 +10,7 @@ board = new five.Board();
 app.get('/', function(req, res) {
     res.sendFile(__dirname + '/index.html');
 });
+
 
 board.on("ready", function() {
 
@@ -24,7 +26,7 @@ board.on("ready", function() {
 
   // Create a new `nunchuk` hardware instance.
   nunchuk = new five.Wii.Nunchuk({
-    freq: 0,
+    freq: 10,
     holdtime: 0,
     threshold: 0
   });
@@ -40,7 +42,26 @@ board.on("ready", function() {
   //   joystickChange(event.axis, event.direction, event.target[event.axis]);
   // });
 
+
   // Experimenting with read "firehose" event:
+  // nunchuk.on("data", function(err, event){
+  //   // console.log(event);
+  //   // var output = event.target.joystick;
+  //   var output = event.target;
+  //   if(output == undefined) {
+  //     output = "-";
+  //   } else {
+  //     oldOutput = output;
+  //   }
+  //   console.log(output);
+
+
+  //   // nunchuk.joystick.on("change", function(err, event){
+  //   //   // console.log(event.target[event.axis]);
+  //   //   joystickChange(event.axis, event.direction, event.target[event.axis]);
+  //   // });
+  // });
+
   nunchuk.joystick.on("change", function(err, event) {
     console.log(
       "joystick " + event.axis,
@@ -51,31 +72,31 @@ board.on("ready", function() {
   });
 
 
-  nunchuk.accelerometer.on("change", function(err, event) {
-    console.log(
-      "accelerometer " + event.axis,
-      event.target[event.axis],
-      event.axis, event.direction
-    );
-    accelerometerChange(event.axis, event.direction, event.target[event.axis]);
-  });
+  // nunchuk.accelerometer.on("change", function(err, event) {
+  //   console.log(
+  //     "accelerometer " + event.axis,
+  //     event.target[event.axis],
+  //     event.axis, event.direction
+  //   );
+  //   accelerometerChange(event.axis, event.direction, event.target[event.axis]);
+  // });
 
 
 
-  ["down", "up", "hold"].forEach(function(type) {
+  // ["down", "up", "hold"].forEach(function(type) {
 
-    nunchuk.on(type, function(err, event) {
-      console.log(
-        event.target.which + " is " + type,
+  //   nunchuk.on(type, function(err, event) {
+  //     console.log(
+  //       event.target.which + " is " + type,
 
-        {
-          isUp: event.target.isUp,
-          isDown: event.target.isDown
-        }
-      );
-    });
+  //       {
+  //         isUp: event.target.isUp,
+  //         isDown: event.target.isDown
+  //       }
+  //     );
+  //   });
 
-  });
+  // });
 
 
 

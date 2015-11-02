@@ -17,6 +17,8 @@
         socket.on('accelerometerChange', function(data) {
             // moveDot(data.axis, data.direction, data.amount);
             // moveDotIncrementally(data.axis, data.direction, data.amount);
+            // changeCamera(data.axis, data.direction, data.amount);
+            // calibrate(data.axis, data.direction, data.amount);
         });
     	socket.on('error', function() { console.error(arguments) });
         socket.on('message', function() { console.log(arguments) });
@@ -30,6 +32,8 @@
     <h1 id="xMin"></h1>
     <h1 id="yMax"></h1>
     <h1 id="yMin"></h1>
+    <h1 id="zMax"></h1>
+    <h1 id="zMin"></h1>
     <div id="indicator"></div>
 
     
@@ -56,7 +60,8 @@
         
 
         // Setting up the main object:
-        var geometry = new THREE.IcosahedronGeometry(1, 0);
+        // var geometry = new THREE.IcosahedronGeometry(1, 0);
+        var geometry = new THREE.CubeGeometry(1, 1, 1);
         var material = new THREE.MeshPhongMaterial( { color: 0xdddddd, specular: 0x009900, shininess: 30, shading: THREE.FlatShading } );
         var mainObject = new THREE.Mesh( geometry, material );
         // mainObject.castShadow = true;
@@ -106,6 +111,8 @@
     var xMin = 1000;
     var yMax = 0;
     var yMin = 1000;
+    var zMax = 0;
+    var zMin = 1000;
 
     // hide the dot for testing:
     $("#indicator").hide();
@@ -132,6 +139,17 @@
                 $("#yMin").html(yMin);
             }
             console.log("Y: " + amount);
+        }
+        if(axis == 'z') {
+            if(amount > zMax) {
+                zMax = amount;
+                $("#zMax").html(zMax);
+            }
+            if(amount < zMin) {
+                zMin = amount;
+                $("#zMin").html(zMin);
+            }
+            console.log("Z: " + amount);
         }
         
     }
@@ -200,6 +218,7 @@
         var tweenDelay = 200;
         if(axis == 'x') { 
             // 124 - 1080 full range of travel
+            // 128-912 is most likely
             // 500-700 is no movement (joystick not being moved)
 
             if(direction == -1 && amount <= 500) {
@@ -209,61 +228,67 @@
                 // console.log("CSS 'left' delta " + direction * moveSpeed + "px");
                 // mainObject.rotation.y += direction * moveSpeed;
                 // mainObject.rotateY(2);
-                new createjs.Tween( mainObject.rotation ).to( { y: mainObject.rotation.y + (direction * moveSpeed)}, moveSpeed )
+                new createjs.Tween( mainObject.rotation ).to( { y: mainObject.rotation.y + (direction * (moveSpeed/3))}, moveSpeed*50 );
+                console.log("moveSpeed = " + moveSpeed);
                 // render();
             }
             if(direction == 1 && amount >= 700) {
-                var moveSpeed = mapValues(amount, 700, 1080, 0, 1);
+                var moveSpeed = mapValues(amount, 700, 912, 0, 1);
                 // changePosition("right", moveSpeed);
                 // $("#indicator").css("left", "+=" + (direction * moveSpeed) + "px");
                 // console.log("CSS 'left' delta: " + direction * moveSpeed + "px");
                 // mainObject.rotation.y += direction * moveSpeed;
-                new createjs.Tween( mainObject.rotation ).to( { y: mainObject.rotation.y + (direction * moveSpeed)}, moveSpeed )
+                new createjs.Tween( mainObject.rotation ).to( { y: mainObject.rotation.y + (direction * (moveSpeed/3))}, moveSpeed*50 );
+                console.log("moveSpeed = " + moveSpeed);
                 // render();
             }
             
         }
         if(axis == 'y') { 
             // 220 - 984 full range of travel
+            // 136-876 is most likely
             // 500-700 is no movement (joystick not being moved)
 
             if(direction == -1 && amount <= 500) {
-                var moveSpeed = mapValues(amount, 220, 500, 1, 0);
+                var moveSpeed = mapValues(amount, 136, 500, 1, 0);
                 // $("#indicator").css("bottom", "+=" + (direction * moveSpeed) + "px");
                 // console.log("CSS 'bottom' delta " + direction * moveSpeed + "px");
                 // mainObject.rotation.x -= direction * moveSpeed;
-                new createjs.Tween( mainObject.rotation ).to( { x: mainObject.rotation.y - (direction * moveSpeed)}, moveSpeed )
+                new createjs.Tween( mainObject.rotation ).to( { x: mainObject.rotation.x - (direction * (moveSpeed/3))}, moveSpeed*50 );
+                console.log("moveSpeed = " + moveSpeed);
                 // render();
             }
             if(direction == 1 && amount >= 700) {
-                var moveSpeed = mapValues(amount, 700, 984, 0, 1);
+                var moveSpeed = mapValues(amount, 700, 876, 0, 1);
                 // $("#indicator").css("bottom", "+=" + (direction * moveSpeed) + "px");
                 // console.log("CSS 'bottom' delta: " + direction * moveSpeed + "px");
                 // mainObject.rotation.x -= direction * moveSpeed;
-                new createjs.Tween( mainObject.rotation ).to( { x: mainObject.rotation.y - (direction * moveSpeed)}, moveSpeed )
+                new createjs.Tween( mainObject.rotation ).to( { x: mainObject.rotation.x - (direction * (moveSpeed/3))}, moveSpeed*50 );
+                console.log("moveSpeed = " + moveSpeed);
                 // render();
             }
             
         }
-        console.log("X: " + mainObject.rotation.x + " Y: " + mainObject.rotation.y);
+        // console.log("X: " + mainObject.rotation.x + " Y: " + mainObject.rotation.y);
     }
+
+
+
+
+    function changeCamera(axis, direction, amount) {
+        if(axis == 'z') {
+            newPositionZ = mapValues(amount, 132, 1080, 0, 1);
+            camera.position.z += newPositionZ;
+            console.log("amount: " + amount + " camera Z position: " + camera.position.z);
+        }
+    }
+
 
 
 
     function mapValues( x, in_min, in_max, out_min, out_max) {
         // Taken directly from Arduino's map() function
         return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
-    }
-
-
-    function changePosition(direction, howMuch) {
-        var cssProperty = "";
-        if(direction == "left" || direction == "right") { cssProperty = "left" }
-        if(direction == "up" || direction == "down") { cssProperty = "bottom" }
-
-        var changeValue = (direction * (howMuch/10)) + "px";
-        $("#indicator").css(cssProperty, "+=" + changeValue);
-        console.log("CSS " + cssProperty + " delta: " + changeValue);
     }
 
 
