@@ -5,11 +5,14 @@
     <!-- <link rel="stylesheet" href="css/style.css" /> -->
     <script src='//code.jquery.com/jquery-1.7.2.min.js'></script>
     <script src='//localhost:3000/socket.io/socket.io.js'></script>
+    <script src="https://code.createjs.com/tweenjs-0.6.1.min.js"></script>
     <script>
     	var socket = io.connect('//localhost:3000');
     	socket.on('joystickChange', function(data) {
             // moveDot(data.axis, data.direction, data.amount);
-            moveDotIncrementally(data.axis, data.direction, data.amount);
+            // moveDotIncrementally(data.axis, data.direction, data.amount);
+            moveObjectIncrementally(data.axis, data.direction, data.amount);
+            // calibrate(data.axis, data.direction, data.amount);
         });
         socket.on('accelerometerChange', function(data) {
             // moveDot(data.axis, data.direction, data.amount);
@@ -23,9 +26,115 @@
 <body>
 
     <h1 id='messages'></h1>
+    <h1 id="xMax"></h1>
+    <h1 id="xMin"></h1>
+    <h1 id="yMax"></h1>
+    <h1 id="yMin"></h1>
     <div id="indicator"></div>
 
+    
+
+    <!-- 3JS CODE: -->
+    <script src="https://ajax.googleapis.com/ajax/libs/threejs/r69/three.min.js"></script>
     <script>
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
+
+        var renderer = new THREE.WebGLRenderer();
+        renderer.setSize( window.innerWidth, window.innerHeight );
+        document.body.appendChild( renderer.domElement );
+
+        
+
+        // Setting up the floor:
+        // var floorGeometry = new THREE.PlaneGeometry( 1000, 1000, 1, 1 );
+        // var floorMaterial = new THREE.MeshBasicMaterial( { color: 0xeeeeee } );
+        // var floor = new THREE.Mesh( floorGeometry, floorMaterial );
+        // floor.receiveShadow = true;
+        // scene.add(floor);
+
+        
+
+        // Setting up the main object:
+        var geometry = new THREE.IcosahedronGeometry(1, 0);
+        var material = new THREE.MeshPhongMaterial( { color: 0xdddddd, specular: 0x009900, shininess: 30, shading: THREE.FlatShading } );
+        var mainObject = new THREE.Mesh( geometry, material );
+        // mainObject.castShadow = true;
+        scene.add( mainObject );
+
+
+
+        // Setting up the lights:
+        var lights = [];
+        lights[0] = new THREE.PointLight( 0xffffff, 1, 0 );
+        lights[1] = new THREE.PointLight( 0xffffff, 1, 0 );
+        lights[2] = new THREE.PointLight( 0xffffff, 1, 0 );
+        
+        lights[0].position.set( 0, 200, 0 );
+        lights[1].position.set( 100, 200, 100 );
+        lights[2].position.set( -100, -200, -100 );
+
+        scene.add( lights[0] );
+        scene.add( lights[1] );
+        scene.add( lights[2] );
+
+
+
+        camera.position.z = 3;
+
+        // renderer.shadowMap.enabled = true;
+        // renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+        var render = function () {
+            requestAnimationFrame( render );
+
+            // mainObject.rotation.x -= 0.05;
+            // mainObject.rotation.y += 0.0;
+            mainObject.__dirtyPosition = true;
+
+            renderer.render(scene, camera);
+        };
+
+        render();
+        console.log("after render function");
+    </script>
+
+
+    <!-- WII NUNCHUK CODE: -->
+    <script>
+    var xMax = 0;
+    var xMin = 1000;
+    var yMax = 0;
+    var yMin = 1000;
+
+    // hide the dot for testing:
+    $("#indicator").hide();
+
+    function calibrate(axis, direction, amount) {
+
+        if(axis == 'x') {
+            if(amount > xMax) {
+                xMax = amount;
+                $("#xMax").html(xMax);
+            }
+            if(amount < xMin) {
+                xMin = amount;
+                $("#xMin").html(xMin);
+            }
+        }
+        if(axis == 'y') {
+            if(amount > yMax) {
+                yMax = amount;
+                $("#yMax").html(yMax);
+            }
+            if(amount < yMin) {
+                yMin = amount;
+                $("#yMin").html(yMin);
+            }
+            console.log("Y: " + amount);
+        }
+        
+    }
 
 
     function moveDot(axis, direction, amount) {
@@ -67,7 +176,7 @@
             
         }
         if(axis == 'y') { 
-            // 124 - 1080 full range of travel
+            // 220 - 984 full range of travel
             // 500-700 is no movement (joystick not being moved)
             
 
@@ -84,6 +193,61 @@
             
         }
     }
+
+
+
+    function moveObjectIncrementally(axis, direction, amount) {
+        var tweenDelay = 200;
+        if(axis == 'x') { 
+            // 124 - 1080 full range of travel
+            // 500-700 is no movement (joystick not being moved)
+
+            if(direction == -1 && amount <= 500) {
+                var moveSpeed = mapValues(amount, 124, 500, 1, 0);
+                // changePosition("left", moveSpeed);
+                // $("#indicator").css("left", "+=" + (direction * moveSpeed) + "px");
+                // console.log("CSS 'left' delta " + direction * moveSpeed + "px");
+                // mainObject.rotation.y += direction * moveSpeed;
+                // mainObject.rotateY(2);
+                new createjs.Tween( mainObject.rotation ).to( { y: mainObject.rotation.y + (direction * moveSpeed)}, moveSpeed )
+                // render();
+            }
+            if(direction == 1 && amount >= 700) {
+                var moveSpeed = mapValues(amount, 700, 1080, 0, 1);
+                // changePosition("right", moveSpeed);
+                // $("#indicator").css("left", "+=" + (direction * moveSpeed) + "px");
+                // console.log("CSS 'left' delta: " + direction * moveSpeed + "px");
+                // mainObject.rotation.y += direction * moveSpeed;
+                new createjs.Tween( mainObject.rotation ).to( { y: mainObject.rotation.y + (direction * moveSpeed)}, moveSpeed )
+                // render();
+            }
+            
+        }
+        if(axis == 'y') { 
+            // 220 - 984 full range of travel
+            // 500-700 is no movement (joystick not being moved)
+
+            if(direction == -1 && amount <= 500) {
+                var moveSpeed = mapValues(amount, 220, 500, 1, 0);
+                // $("#indicator").css("bottom", "+=" + (direction * moveSpeed) + "px");
+                // console.log("CSS 'bottom' delta " + direction * moveSpeed + "px");
+                // mainObject.rotation.x -= direction * moveSpeed;
+                new createjs.Tween( mainObject.rotation ).to( { x: mainObject.rotation.y - (direction * moveSpeed)}, moveSpeed )
+                // render();
+            }
+            if(direction == 1 && amount >= 700) {
+                var moveSpeed = mapValues(amount, 700, 984, 0, 1);
+                // $("#indicator").css("bottom", "+=" + (direction * moveSpeed) + "px");
+                // console.log("CSS 'bottom' delta: " + direction * moveSpeed + "px");
+                // mainObject.rotation.x -= direction * moveSpeed;
+                new createjs.Tween( mainObject.rotation ).to( { x: mainObject.rotation.y - (direction * moveSpeed)}, moveSpeed )
+                // render();
+            }
+            
+        }
+        console.log("X: " + mainObject.rotation.x + " Y: " + mainObject.rotation.y);
+    }
+
 
 
     function mapValues( x, in_min, in_max, out_min, out_max) {
@@ -109,6 +273,10 @@
 
 
     <style>
+        
+        /* For 3JS: */
+        body { margin: 0; }
+        canvas { width: 100%; height: 100% }
 
         html {
           box-sizing: border-box;

@@ -41,7 +41,7 @@ board.on("ready", function() {
   // });
 
   // Experimenting with read "firehose" event:
-  nunchuk.joystick.on("change", function(err, event) {
+  nunchuk.on("data", function(err, event) {
     console.log(
       "joystick " + event.axis,
       event.target[event.axis],
