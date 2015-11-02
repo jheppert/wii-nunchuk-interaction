@@ -60,10 +60,34 @@
         
 
         // Setting up the main object:
+        var littleCubes = new Array();
+        littleCubes[0] = new Array();
+        littleCubes[0][0] = new Array();
         // var geometry = new THREE.IcosahedronGeometry(1, 0);
-        var geometry = new THREE.CubeGeometry(1, 1, 1);
+        var littleCubeGeometry = new THREE.BoxGeometry(1, 1, 1);
+        // var geometry = new THREE.CubeGeometry(1, 1, 1);
         var material = new THREE.MeshPhongMaterial( { color: 0xdddddd, specular: 0x009900, shininess: 30, shading: THREE.FlatShading } );
-        var mainObject = new THREE.Mesh( geometry, material );
+
+
+        // Generate a matrix of cubes for a rubix cube:
+        for(var n1=0;n1<3;n1++) {
+            for(var n2=0;n2<3;n2++) {
+                for(var n3=0;n3<3;n3++) {
+                    littleCubes[n3] = new THREE.Mesh( littleCubeGeometry, material );
+                }
+                littleCubes[n1][n2] = littleCubes[n2];
+            }
+        }
+        // littleCubes[0] = new THREE.Mesh( littleCubeGeometry, material );
+        // littleCubes[1] = new THREE.Mesh( littleCubeGeometry, material );
+        // littleCubes[2] = new THREE.Mesh( littleCubeGeometry, material );
+
+        // var littleCube[1].translateX(1);
+
+        var mainObject = new THREE.Object3D(); // Group
+        mainObject.add(littleCubes[0].translateX(-1.1));
+        mainObject.add(littleCubes[1]);
+        mainObject.add(littleCubes[2].translateX(1.1));
         // mainObject.castShadow = true;
         scene.add( mainObject );
 
