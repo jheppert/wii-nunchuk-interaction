@@ -72,14 +72,14 @@ board.on("ready", function() {
   });
 
 
-  // nunchuk.accelerometer.on("change", function(err, event) {
-  //   console.log(
-  //     "accelerometer " + event.axis,
-  //     event.target[event.axis],
-  //     event.axis, event.direction
-  //   );
-  //   accelerometerChange(event.axis, event.direction, event.target[event.axis]);
-  // });
+  nunchuk.accelerometer.on("change", function(err, event) {
+    console.log(
+      "accelerometer " + event.axis,
+      event.target[event.axis],
+      event.axis, event.direction
+    );
+    accelerometerChange(event.axis, event.direction, event.target[event.axis]);
+  });
 
 
 

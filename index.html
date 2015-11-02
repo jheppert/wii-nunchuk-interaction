@@ -11,14 +11,17 @@
     	socket.on('joystickChange', function(data) {
             // moveDot(data.axis, data.direction, data.amount);
             // moveDotIncrementally(data.axis, data.direction, data.amount);
-            moveObjectIncrementally(data.axis, data.direction, data.amount);
+            // moveObjectIncrementally(data.axis, data.direction, data.amount);
             // calibrate(data.axis, data.direction, data.amount);
+            changeCamera(data.axis, data.direction, data.amount);
         });
         socket.on('accelerometerChange', function(data) {
             // moveDot(data.axis, data.direction, data.amount);
             // moveDotIncrementally(data.axis, data.direction, data.amount);
             // changeCamera(data.axis, data.direction, data.amount);
             // calibrate(data.axis, data.direction, data.amount);
+            // displayValues(data.axis, data.direction, data.amount);
+            moveObjectWithAccelerometer(data.axis, data.direction, data.amount);
         });
     	socket.on('error', function() { console.error(arguments) });
         socket.on('message', function() { console.log(arguments) });
@@ -65,8 +68,8 @@
         // littleCubes[0][0] = new Array();
         // var littleCubeGeometry = new THREE.BoxGeometry(1, 1, 1);
 
-        // var geometry = new THREE.IcosahedronGeometry(1, 0);
-        var geometry = new THREE.BoxGeometry(1, 1, 1);
+        var geometry = new THREE.IcosahedronGeometry(1, 0);
+        // var geometry = new THREE.BoxGeometry(1, 1, 1);
         var material = new THREE.MeshPhongMaterial( { color: 0xdddddd, specular: 0x009900, shininess: 30, shading: THREE.FlatShading } );
 
 
@@ -178,6 +181,22 @@
         }
         
     }
+
+
+    function displayValues(axis, direction, amount) {
+
+        if(axis == 'x') {
+            $("#xMax").html(amount);
+        }
+        if(axis == 'y') {
+            $("#yMax").html(amount);
+        }
+        if(axis == 'z') {
+            $("#zMax").html(amount);
+        }
+        
+    }
+
 
 
     function moveDot(axis, direction, amount) {
@@ -300,11 +319,125 @@
 
 
 
+
+
+
+function moveObjectWithAccelerometer(axis, direction, amount) {
+        var tweenDelay = 200;
+        if(axis == 'x') { 
+            // ? - ? full range of travel
+            // 264-720 is most likely
+            // 450 is no movement (not being moved)
+
+            if(direction == -1 && amount <= 450) {
+                var moveSpeed = mapValues(amount, 264, 450, 1, 0);
+                // changePosition("left", moveSpeed);
+                // $("#indicator").css("left", "+=" + (direction * moveSpeed) + "px");
+                // console.log("CSS 'left' delta " + direction * moveSpeed + "px");
+                // mainObject.rotation.y += direction * moveSpeed;
+                // mainObject.rotateY(2);
+                new createjs.Tween( mainObject.rotation ).to( { z: mainObject.rotation.z - (direction * (moveSpeed/3))}, moveSpeed*50 );
+                console.log("moveSpeed = " + moveSpeed);
+                // render();
+            }
+            if(direction == 1 && amount >= 450) {
+                var moveSpeed = mapValues(amount, 450, 720, 0, 1);
+                // changePosition("right", moveSpeed);
+                // $("#indicator").css("left", "+=" + (direction * moveSpeed) + "px");
+                // console.log("CSS 'left' delta: " + direction * moveSpeed + "px");
+                // mainObject.rotation.y += direction * moveSpeed;
+                new createjs.Tween( mainObject.rotation ).to( { z: mainObject.rotation.z - (direction * (moveSpeed/3))}, moveSpeed*50 );
+                console.log("moveSpeed = " + moveSpeed);
+                // render();
+            }
+            
+        }
+        if(axis == 'y') { 
+            // ? - ? full range of travel
+            // 420-672 is most likely
+            // 550 is no movement (not being moved)
+
+            if(direction == -1 && amount <= 550) {
+                var moveSpeed = mapValues(amount, 420, 550, 1, 0);
+                // $("#indicator").css("bottom", "+=" + (direction * moveSpeed) + "px");
+                // console.log("CSS 'bottom' delta " + direction * moveSpeed + "px");
+                // mainObject.rotation.x -= direction * moveSpeed;
+                new createjs.Tween( mainObject.rotation ).to( { x: mainObject.rotation.x - (direction * (moveSpeed/3))}, moveSpeed*50 );
+                console.log("moveSpeed = " + moveSpeed);
+                // render();
+            }
+            if(direction == 1 && amount >= 550) {
+                var moveSpeed = mapValues(amount, 550, 672, 0, 1);
+                // $("#indicator").css("bottom", "+=" + (direction * moveSpeed) + "px");
+                // console.log("CSS 'bottom' delta: " + direction * moveSpeed + "px");
+                // mainObject.rotation.x -= direction * moveSpeed;
+                new createjs.Tween( mainObject.rotation ).to( { x: mainObject.rotation.x - (direction * (moveSpeed/3))}, moveSpeed*50 );
+                console.log("moveSpeed = " + moveSpeed);
+                // render();
+            }
+            
+        }
+        if(axis == 'z' && amount > 800) {
+            // Forceful "whip" action
+            var axisArray = ['x', 'y', 'z'];
+            var randomAxis = Math.round(Math.random() * (2 - 0) + 0);
+            console.log(randomAxis);
+            if(axisArray[randomAxis] == 'x'){
+                new createjs.Tween( mainObject.scale ).to( { x: mainObject.scale.x + 1}, 200 );
+            }
+            if(axisArray[randomAxis] == 'y'){
+                new createjs.Tween( mainObject.scale ).to( { y: mainObject.scale.y + 1}, 200 );
+            }
+            if(axisArray[randomAxis] == 'z'){
+                new createjs.Tween( mainObject.scale ).to( { z: mainObject.scale.z + 1}, 200 );
+            }
+            console.log("Bam!");
+        }
+        // if(axis == 'z') { 
+        //     // ? - ? full range of travel
+        //     // 388-704 is most likely
+        //     // 600-700 is no movement (not being moved)
+
+        //     if(direction == -1 && amount <= 500) {
+        //         var moveSpeed = mapValues(amount, 136, 500, 1, 0);
+        //         // $("#indicator").css("bottom", "+=" + (direction * moveSpeed) + "px");
+        //         // console.log("CSS 'bottom' delta " + direction * moveSpeed + "px");
+        //         // mainObject.rotation.x -= direction * moveSpeed;
+        //         new createjs.Tween( mainObject.rotation ).to( { z: mainObject.rotation.z - (direction * (moveSpeed/3))}, moveSpeed*50 );
+        //         console.log("moveSpeed = " + moveSpeed);
+        //         // render();
+        //     }
+        //     if(direction == 1 && amount >= 700) {
+        //         var moveSpeed = mapValues(amount, 700, 876, 0, 1);
+        //         // $("#indicator").css("bottom", "+=" + (direction * moveSpeed) + "px");
+        //         // console.log("CSS 'bottom' delta: " + direction * moveSpeed + "px");
+        //         // mainObject.rotation.x -= direction * moveSpeed;
+        //         new createjs.Tween( mainObject.rotation ).to( { z: mainObject.rotation.z - (direction * (moveSpeed/3))}, moveSpeed*50 );
+        //         console.log("moveSpeed = " + moveSpeed);
+        //         // render();
+        //     }
+            
+        // }
+        // console.log("X: " + mainObject.rotation.x + " Y: " + mainObject.rotation.y);
+    }
+
+
+
+
+
     function changeCamera(axis, direction, amount) {
-        if(axis == 'z') {
-            newPositionZ = mapValues(amount, 132, 1080, 0, 1);
-            camera.position.z += newPositionZ;
-            console.log("amount: " + amount + " camera Z position: " + camera.position.z);
+        if(axis == 'y') {
+            // newPositionZ = mapValues(amount, 132, 1080, 0, 1);
+            // camera.position.z += newPositionZ;
+            // console.log("amount: " + amount + " camera Z position: " + camera.position.z);
+            if(direction == -1 && amount <= 500) {
+                var cameraMove = mapValues(amount, 136, 500, 1, 0);
+                camera.position.z -= direction * cameraMove;
+            }
+            if(direction == 1 && amount >= 700) {
+                var cameraMove = mapValues(amount, 700, 876, 0, 1);
+                camera.position.z -= direction * cameraMove;
+            }
         }
     }
 
