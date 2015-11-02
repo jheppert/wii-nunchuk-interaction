@@ -19,7 +19,8 @@
         });
         socket.on('buttonChange', function(data){
             console.log("BUTTON: " + data.button + " " + data.status);
-            // changeGeometry();
+            shrinkAndGrowGeometry(data.button, data.status);
+            // changeGeometry(data.button, data.status);
         });
     	socket.on('error', function() { console.error(arguments) });
         socket.on('message', function() { console.log(arguments) });
@@ -42,6 +43,11 @@
     <!-- 3JS CODE: -->
     <script src="https://ajax.googleapis.com/ajax/libs/threejs/r69/three.min.js"></script>
     <script>
+
+        var xRotation = 0;
+        var yRotation = 0;
+        var zCameraPosition = 0;
+        var yCameraPosition = 0;
         var scene = new THREE.Scene();
         var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
 
@@ -61,15 +67,16 @@
 
         // Setting up the main object:
         var geometry = [];
-        geometry[0] = new THREE.IcosahedronGeometry(1, 0);
-        geometry[1] = new THREE.BoxGeometry(1, 1, 1);
-        geometry[2] = new THREE.SphereGeometry( 1, 16, 16 );
-        var material = new THREE.MeshPhongMaterial( { color: 0xdddddd, specular: 0x009900, shininess: 30, shading: THREE.FlatShading } );
+        geometry[0] = new THREE.BoxGeometry(1, 1, 1);
+        geometry[1] = new THREE.SphereGeometry( 1, 16, 16 );
+        geometry[2] = new THREE.IcosahedronGeometry(1, 0);
+        var material = new THREE.MeshPhongMaterial( { color: 0x00dddd, specular: 0x009900, shininess: 30, shading: THREE.FlatShading } );
 
 
         // var mainObject = new THREE.Object3D(); // Group
-        var mainObject = new THREE.Mesh( geometry[2], material );
+        var mainObject = new THREE.Mesh( geometry[0], material );
         scene.add( mainObject );
+        // scene.remove(mainObject);
 
 
 
@@ -102,9 +109,14 @@
         var render = function () {
             requestAnimationFrame( render );
 
+            mainObject.rotation.x -= yRotation;
+            mainObject.rotation.z -= xRotation;
+            // camera.position.z += zCameraPosition;
+            // camera.position.y = yCameraPosition;
+
             // mainObject.rotation.x -= 0.05;
             // mainObject.rotation.y += 0.0;
-            mainObject.__dirtyPosition = true;
+            // mainObject.__dirtyPosition = true;
             renderer.render(scene, camera);
         };
 
@@ -120,9 +132,10 @@
     var yMin = 1000;
     var zMax = 0;
     var zMin = 1000;
+    var axisToChange = 0;
 
     // hide the dot for testing:
-    $("#indicator").hide();
+    // $("#indicator").hide();
 
     function calibrate(axis, direction, amount) {
 
@@ -187,24 +200,20 @@
             // 450 is no movement (not being moved)
 
             if(direction == -1 && amount <= 450) {
-                var moveSpeed = mapValues(amount, 264, 450, 1, 0);
-                // changePosition("left", moveSpeed);
-                // $("#indicator").css("left", "+=" + (direction * moveSpeed) + "px");
-                // console.log("CSS 'left' delta " + direction * moveSpeed + "px");
-                // mainObject.rotation.y += direction * moveSpeed;
-                // mainObject.rotateY(2);
-                new createjs.Tween( mainObject.rotation ).to( { z: mainObject.rotation.z - (direction * (moveSpeed/3))}, moveSpeed*50 );
-                console.log("moveSpeed = " + moveSpeed);
+                var moveSpeed = mapValues(amount, 264, 450, .05, 0);
+                // new createjs.Tween( mainObject.rotation ).to( { z: mainObject.rotation.z - (direction * (moveSpeed/3))}, moveSpeed*50 );
+                // console.log("moveSpeed = " + moveSpeed);
+                // mainObject.updateMatrix();
+                xRotation = moveSpeed * direction;
+
                 // render();
             }
             if(direction == 1 && amount >= 450) {
-                var moveSpeed = mapValues(amount, 450, 720, 0, 1);
-                // changePosition("right", moveSpeed);
-                // $("#indicator").css("left", "+=" + (direction * moveSpeed) + "px");
-                // console.log("CSS 'left' delta: " + direction * moveSpeed + "px");
-                // mainObject.rotation.y += direction * moveSpeed;
-                new createjs.Tween( mainObject.rotation ).to( { z: mainObject.rotation.z - (direction * (moveSpeed/3))}, moveSpeed*50 );
-                console.log("moveSpeed = " + moveSpeed);
+                var moveSpeed = mapValues(amount, 450, 720, 0, .05);
+                // new createjs.Tween( mainObject.rotation ).to( { z: mainObject.rotation.z - (direction * (moveSpeed/3))}, moveSpeed*50 );
+                // console.log("moveSpeed = " + moveSpeed);
+                // mainObject.updateMatrix();
+                xRotation = moveSpeed * direction;
                 // render();
             }
             
@@ -215,21 +224,19 @@
             // 550 is no movement (not being moved)
 
             if(direction == -1 && amount <= 550) {
-                var moveSpeed = mapValues(amount, 420, 550, 1, 0);
-                // $("#indicator").css("bottom", "+=" + (direction * moveSpeed) + "px");
-                // console.log("CSS 'bottom' delta " + direction * moveSpeed + "px");
-                // mainObject.rotation.x -= direction * moveSpeed;
-                new createjs.Tween( mainObject.rotation ).to( { x: mainObject.rotation.x - (direction * (moveSpeed/3))}, moveSpeed*50 );
-                console.log("moveSpeed = " + moveSpeed);
+                var moveSpeed = mapValues(amount, 420, 550, .05, 0);
+                // new createjs.Tween( mainObject.rotation ).to( { x: mainObject.rotation.x - (direction * (moveSpeed/3))}, moveSpeed*50 );
+                // console.log("moveSpeed = " + moveSpeed);
+                // mainObject.updateMatrix();
+                yRotation = moveSpeed * direction;
                 // render();
             }
             if(direction == 1 && amount >= 550) {
-                var moveSpeed = mapValues(amount, 550, 672, 0, 1);
-                // $("#indicator").css("bottom", "+=" + (direction * moveSpeed) + "px");
-                // console.log("CSS 'bottom' delta: " + direction * moveSpeed + "px");
-                // mainObject.rotation.x -= direction * moveSpeed;
-                new createjs.Tween( mainObject.rotation ).to( { x: mainObject.rotation.x - (direction * (moveSpeed/3))}, moveSpeed*50 );
-                console.log("moveSpeed = " + moveSpeed);
+                var moveSpeed = mapValues(amount, 550, 672, 0, .05);
+                // new createjs.Tween( mainObject.rotation ).to( { x: mainObject.rotation.x - (direction * (moveSpeed/3))}, moveSpeed*50 );
+                // console.log("moveSpeed = " + moveSpeed);
+                // mainObject.updateMatrix();
+                yRotation = moveSpeed * direction;
                 // render();
             }
             
@@ -237,22 +244,22 @@
         if(axis == 'z' && amount > 800) {
             // Forceful "whip" action
             var axisArray = ['x', 'y', 'z'];
-            var randomAxis = Math.round(Math.random() * (2 - 0) + 0);
-            console.log(randomAxis);
-            if(axisArray[randomAxis] == 'x'){
-                new createjs.Tween( mainObject.scale ).to( { x: mainObject.scale.x + (camera.position.z /6)}, 200 );
+            // var randomAxis = Math.round(Math.random() * (2 - 0) + 0);
+            console.log(axisToChange);
+            if(axisArray[axisToChange] == 'x'){
+                new createjs.Tween( mainObject.scale ).to( { x: 0}, 200 );
             }
-            if(axisArray[randomAxis] == 'y'){
-                new createjs.Tween( mainObject.scale ).to( { y: mainObject.scale.y + (camera.position.z /6)}, 200 );
+            if(axisArray[axisToChange] == 'y'){
+                new createjs.Tween( mainObject.scale ).to( { y: 0}, 200 );
             }
-            if(axisArray[randomAxis] == 'z'){
-                new createjs.Tween( mainObject.scale ).to( { z: mainObject.scale.z + (camera.position.z /6)}, 200 );
+            if(axisArray[axisToChange] == 'z'){
+                new createjs.Tween( mainObject.scale ).to( { z: 0}, 200 );
             }
             // var newObject = mainObject.clone();
             // newObject.position.set(2, 2, 2);
             // scene.add(newObject);
             // render();
-            console.log("Bam!");
+            console.log("Splat!");
         }
     }
 
@@ -268,10 +275,12 @@
             if(direction == -1 && amount <= 500) {
                 var cameraMove = mapValues(amount, 136, 500, 1, 0);
                 camera.position.z -= direction * cameraMove;
+                // zCameraPosition = cameraMove * direction;
             }
             if(direction == 1 && amount >= 700) {
                 var cameraMove = mapValues(amount, 700, 876, 0, 1);
                 camera.position.z -= direction * cameraMove;
+                // zCameraPosition = cameraMove * direction;
             }
             console.log("Camera z value: " + camera.position.z);
         }
@@ -288,6 +297,70 @@
                 camera.position.x += direction * cameraMove;
             }
             console.log("Camera z value: " + camera.position.z);
+        }
+    }
+
+
+
+    function changeGeometry(button, status) {
+        if(button == 'z' && status == 'down') {
+            scene.remove( mainObject );
+            // mainObject.updateMatrix();
+            var mainObject = new THREE.Mesh( geometry[0], material );
+            scene.add( mainObject );
+            // mainObject.updateMatrix();
+        }
+    }
+
+
+    function shrinkAndGrowGeometry(button, status) {
+        if(button == 'z' && status == 'down') {
+            var axisArray = ['x', 'y', 'z'];
+            // var randomAxis = Math.round(Math.random() * (2 - 0) + 0);
+            console.log(axisToChange);
+            if(axisArray[axisToChange] == 'x'){
+                new createjs.Tween( mainObject.scale ).to( { x: mainObject.scale.x - (camera.position.z /6)}, 200 );
+            }
+            if(axisArray[axisToChange] == 'y'){
+                new createjs.Tween( mainObject.scale ).to( { y: mainObject.scale.y - (camera.position.z /6)}, 200 );
+            }
+            if(axisArray[axisToChange] == 'z'){
+                new createjs.Tween( mainObject.scale ).to( { z: mainObject.scale.z - (camera.position.z /6)}, 200 );
+            }
+            // var newObject = mainObject.clone();
+            // newObject.position.set(2, 2, 2);
+            // scene.add(newObject);
+            // render();
+            if(axisToChange == 2) {
+                axisToChange = 0;
+            } else {
+                axisToChange++;
+            }
+            console.log("Bam!");
+        }
+        if(button == 'c' && status == 'down') {
+            var axisArray = ['x', 'y', 'z'];
+            // var randomAxis = Math.round(Math.random() * (2 - 0) + 0);
+            console.log(axisToChange);
+            if(axisArray[axisToChange] == 'x'){
+                new createjs.Tween( mainObject.scale ).to( { x: mainObject.scale.x + (camera.position.z /6)}, 200 );
+            }
+            if(axisArray[axisToChange] == 'y'){
+                new createjs.Tween( mainObject.scale ).to( { y: mainObject.scale.y + (camera.position.z /6)}, 200 );
+            }
+            if(axisArray[axisToChange] == 'z'){
+                new createjs.Tween( mainObject.scale ).to( { z: mainObject.scale.z + (camera.position.z /6)}, 200 );
+            }
+            // var newObject = mainObject.clone();
+            // newObject.position.set(2, 2, 2);
+            // scene.add(newObject);
+            // render();
+            if(axisToChange == 2) {
+                axisToChange = 0;
+            } else {
+                axisToChange++;
+            }
+            console.log("Bam!");
         }
     }
 
